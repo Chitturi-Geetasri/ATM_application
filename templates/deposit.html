@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Update Amount Example</title>
 </head>
 <body>
     <center>
@@ -17,15 +17,15 @@
     <p id="responseMsg"></p>
 
     <script>
-        decument.getElementByID("amountForm").addEventListner('submit',function(event){
+        decument.getElementByID("amountForm").addEventListener('submit',function(event){
             event.preventDefault();
             const amount=document.getElementById('amount').vlaue;
             fetch("{{url_for('deposit')}}",{
                 method: "PUT",
                 headers:{
-                    "content-Type":"application/json"
+                    "Content-Type":"application/json"
                 },
-                body:JSON.stringify({amount:amount})
+                body:JSON.stringify({amount: amount})
             })
             .then(response => response.json())
             .then(data => {

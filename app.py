@@ -1,4 +1,4 @@
-from flask import Flask,request,redirect,url_for,render_template,make_response,jsonify 
+from flask import Flask,request,redirect,url_for,render_template,make_response,jsonify
 app=Flask(__name__)
 users={} # to store user data
 @app.route('/')
@@ -33,13 +33,13 @@ def login():
         else:
             return 'Username was wrong'
     return render_template('login.html')
-@app.route('/dashboard',method)
+@app.route('/dashboard',methods=['GET'])
 def dashboard():
     if request.cookies.get('user'):
         return render_template('dashboard.html')
     else:
         return 'Please login view dashboard'
-@app.route('/deposit',methods=['GET','POST'])
+@app.route('/deposit',methods=['GET','PUT'])
 def deposit():
     if request.cookies.get('user'):
         if request.method=='PUT':
@@ -47,17 +47,46 @@ def deposit():
             print(request.get_json())
             deposit_amount=int(request.get_json()['amount']) #500
             if deposit_amount>0:
-                if deposit_amount % 100 ==0:
+                if deposit_amount %100 ==0:
                     if deposit_amount<=50000:
-                        users[username]['AMount']=users[username]['Amount']+deposit_amount
+                        users[username]['Amount']=users[username]['Amount']+deposit_amount
                         return f'{deposit_amount}'
                     else:
-                        return jsonify({'message':'Amount should be <=50000'})
+                        return jsonify({'message':'Amount should be <= 50000'})
                 else:
-                    return jsonify({'Amount should be multiple 100'})
+                    return jsonify({'message':'Amount should be multiple 100'})
             else:
-                return jsonify({"message":'Amount should be >0'})
-        return render_template('deposit.html')
+                return jsonify({"message":'Amount should be > 0'})
+        return render_template('deposit.html') 
     else:
-        return 'Please login view deposit'
+        return 'pls login view deposit'
+def withdraw():
+    if request.cookies.get('user'):
+        if request.method=='PUT':
+            username=request.cookies.get('user')
+            print(request.get_json())
+            withdraw_amount=int(request.get_json()['amount']) #500
+            balance_amount=users[username]['Amount']
+            if withdraw_amount>0:
+                if withdraw_amount %100 ==0:
+                    if withdraw_amount<=balance_amount:
+                        users[username]['Amount']=balance_amount-withdraw_amount
+                        return jsonify({'message':f'{users[username]['Amount']} after withdraw'})
+                    else:
+                        return jsonify({'message':f'Amount exceeded than Balance {balance_amount}'})
+                else:
+                    return jsonify({'message':'Amount should be multiple 100'})
+            else:
+                return jsonify({"message":'Amount should be > 0'})
+        return render_template('withdraw.html') 
+    else:
+        return 'pls login to withdraw'
+@app.route('/balance',methods=['GET'])
+def balance():
+    if request.cookies.get('user'):
+        username=request.cookies.get('user')
+        balance_amount=users[username]['Amount']
+        return render_template('balance.html',balance_amount=balance_amount)
+    else:
+        return redirect(url_for('login'))
 app.run(use_reloader=True,debug=True)
