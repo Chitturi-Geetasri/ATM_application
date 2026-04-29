@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    {% block title %}
     <title>Dashboard</title>
+    {% endblock %}
     <style>
         body {
             margin: 0;
@@ -57,12 +59,13 @@
             <a href="{{url_for('withdraw')}}">Withdraws</a>
             <a href="{{url_for('deposit')}}">deposits</a>
             <a href="{{url_for('balance')}}">Balance</a>
+            <a href="{{url_for('userstatements')}}">Statements</a>
         </div>
         {{request.cookies.get('user')}}
         <form action="#" method="POST">
             <button class="logout-btn">Logout</button>
         </form>
     </div>
-
+{% block content %}{% endblock %}
 </body>
 </html>

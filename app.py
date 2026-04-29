@@ -1,6 +1,8 @@
 from flask import Flask,request,redirect,url_for,render_template,make_response,jsonify
+from datetime import datetime
 app=Flask(__name__)
 users={} # to store user data
+statements={} #to store statement of users
 @app.route('/')
 def home():
     return render_template('welcome.html')
@@ -14,6 +16,8 @@ def register():
         if username not in users:
             users[username]={'user_password':userpassword,'user_pinno':user_pinno,'Amount':0}
             print(users)
+            if username not in statements:
+                statements[username]={'Deposit_statements':[],'withdraw_statemnets':[]}
             return redirect(url_for('login'))
         else:
             return 'user already existed'
@@ -50,6 +54,9 @@ def deposit():
                 if deposit_amount %100 ==0:
                     if deposit_amount<=50000:
                         users[username]['Amount']=users[username]['Amount']+deposit_amount
+                        deposit_time=datetime.now()
+                        deposit_data=(deposit_amount,deposit_time)
+                        statements[username]['Deposit_statements'].append(deposit_data)
                         return f'{deposit_amount}'
                     else:
                         return jsonify({'message':'Amount should be <= 50000'})
@@ -72,6 +79,9 @@ def withdraw():
                 if withdraw_amount %100 ==0:
                     if withdraw_amount<=balance_amount:
                         users[username]['Amount']=balance_amount-withdraw_amount
+                        withdraw_time=datetime.now()
+                        withdraw_data=(withdraw_amount,withdraw_time)
+                        statements[username]['Withdraw_statements'].append(withdraw_data)
                         return jsonify({'message':f'{users[username]['Amount']} after withdraw'})
                     else:
                         return jsonify({'message':f'Amount exceeded than Balance {balance_amount}'})
@@ -90,4 +100,21 @@ def balance():
         return render_template('balance.html',balance_amount=balance_amount)
     else:
         return redirect(url_for('login'))
+@app.route('/userstatements',methods=['GET'])
+def userstatements():
+    if request.cookies.get('user'):
+        username=request.cookies.get('user')
+        deposit_userstatements=statements[username]['Deposit_statements']
+        withdraw_userstatements=statements[username]['Withdraw_statements']
+        return render_template('statements.html',deposit_userstatements=deposit_userstatements,withdraw_userstatements=withdraw_userstatements)
+    else:
+        return redirect(url_for('login'))
+@app.route('/logout')
+def logout():
+    if request.cookies.get('user'):
+        resp=redirect(url_for('login'))
+        resp.delete_cookie('user')
+        return resp
+    else:
+        return 'user not found'
 app.run(use_reloader=True,debug=True)
