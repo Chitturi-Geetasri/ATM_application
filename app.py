@@ -3,7 +3,7 @@ app=Flask(__name__)
 users={} # to store user data
 @app.route('/')
 def home():
-    return render_template('Welcome.html')
+    return render_template('welcome.html')
 @app.route('/register',methods=['GET','POST'])
 def register():
     if request.method=='POST':
@@ -60,6 +60,7 @@ def deposit():
         return render_template('deposit.html') 
     else:
         return 'pls login view deposit'
+@app.route('/withdraw',methods=['GET','PUT'])
 def withdraw():
     if request.cookies.get('user'):
         if request.method=='PUT':
